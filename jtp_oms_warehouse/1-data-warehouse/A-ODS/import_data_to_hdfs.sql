@@ -39,7 +39,7 @@ SELECT
     *
 FROM jtp_oms_warehouse.ods_ums_member
 -- where dt = '2024-12-31'
--- where dt = '2025-01-01'
+where dt = '2025-01-01'
 ;
 
 
@@ -141,7 +141,8 @@ CREATE EXTERNAL TABLE IF NOT EXISTS jtp_oms_warehouse.ods_oms_order_incr
 ) COMMENT 'OMS系统订单表'
     PARTITIONED BY (dt STRING)
     STORED AS ORC
-    LOCATION 'hdfs://node101:8020/warehouse/jtp_oms_warehouse/ods_oms_order_incr';
+    LOCATION 'hdfs://node101:8020/warehouse/jtp_oms_warehouse/ods_oms_order_incr'
+;
 
 
 -- 查询数据
@@ -149,9 +150,12 @@ SELECT
     *
 FROM jtp_oms_warehouse.ods_oms_order_incr
 -- WHERE dt = '2024-12-31'
--- WHERE dt = '2025-01-01'
+WHERE dt = '2025-01-01'
 ;
-ALTER TABLE jtp_oms_warehouse.ods_oms_order_incr ADD IF NOT EXISTS PARTITION (dt = '2024-12-31');
+
+ALTER TABLE jtp_oms_warehouse.ods_oms_order_incr ADD IF NOT EXISTS PARTITION (dt = '2024-12-26');
+ALTER TABLE jtp_oms_warehouse.ods_oms_order_incr ADD IF NOT EXISTS PARTITION (dt = '2024-12-25');
+ALTER TABLE jtp_oms_warehouse.ods_oms_order_incr ADD IF NOT EXISTS PARTITION (dt = '2024-12-28');
 
 ALTER TABLE jtp_oms_warehouse.ods_oms_order_incr ADD IF NOT EXISTS PARTITION (dt = '2025-01-01');
 
