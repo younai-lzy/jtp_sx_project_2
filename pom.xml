@@ -8,6 +8,9 @@
   <modules>
     <module>jtp_ads_warehouse</module>
       <module>jtp_oms_warehouse</module>
+      <module>jtp-gongdan-warehouse</module>
+      <module>jtp-vivo-log-warehouse</module>
+      <module>songguo_warehouse</module>
   </modules>
   <packaging>pom</packaging>
 
