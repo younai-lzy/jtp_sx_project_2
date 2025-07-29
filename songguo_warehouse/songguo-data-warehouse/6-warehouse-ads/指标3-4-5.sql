@@ -82,8 +82,8 @@ SELECT * FROM ads_city_amount;
 --todo 5.整合核心指标供BI展示
 set spark.sql.adaptive.enabled=true;
 
-DROP TABLE IF EXISTS ads_BI;
-CREATE TABLE IF NOT EXISTS ads_BI
+DROP TABLE IF EXISTS ads_core_target;
+CREATE TABLE IF NOT EXISTS ads_core_target
 AS
 SELECT
     t2.dt AS stat_date
@@ -101,7 +101,7 @@ FROM songguo_warehouse.dwd_fact_order_info t1
                        AND t1.dt = t2.dt
 GROUP BY t2.dt;
 
-SELECT * FROM ads_BI;
+SELECT * FROM ads_core_target;
 
 
 
