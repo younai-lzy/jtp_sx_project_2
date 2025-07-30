@@ -1,12 +1,14 @@
+# noinspection SqlCurrentSchemaInspectionForFile
+
 -- 创建数据库
 CREATE DATABASE IF NOT EXISTS jtp_flow_topic CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- 切换到新创建的数据库
 USE jtp_flow_topic;
 
--- 1. ods_user_action_log: 用户行为日志表
+-- 1. user_action_log: 用户行为日志表
 -- 记录用户在电商平台上的各种行为，如页面浏览、点击、加入购物车、购买等。
-CREATE TABLE IF NOT EXISTS ods_user_action_log
+CREATE TABLE IF NOT EXISTS user_action_log
 (
     log_id      VARCHAR(64) PRIMARY KEY COMMENT '日志唯一ID',
     user_id     VARCHAR(64) COMMENT '用户ID',
@@ -23,9 +25,9 @@ CREATE TABLE IF NOT EXISTS ods_user_action_log
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci COMMENT ='用户行为日志原始表';
 
--- 2. ods_order_info: 订单信息表
+-- 2. order_info: 订单信息表
 -- 记录用户的订单详情，用于计算引导支付金额。
-CREATE TABLE IF NOT EXISTS ods_order_info
+CREATE TABLE IF NOT EXISTS order_info
 (
     order_id     VARCHAR(64) PRIMARY KEY COMMENT '订单ID',
     user_id      VARCHAR(64) COMMENT '用户ID',
@@ -39,9 +41,9 @@ CREATE TABLE IF NOT EXISTS ods_order_info
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci COMMENT ='订单信息原始表';
 
--- 3. ods_product_info: 商品信息表
+-- 3. product_info: 商品信息表
 -- 记录商品的基本信息，用于关联商品ID获取商品名称等。
-CREATE TABLE IF NOT EXISTS ods_product_info
+CREATE TABLE IF NOT EXISTS product_info
 (
     product_id   VARCHAR(64) PRIMARY KEY COMMENT '商品ID',
     product_name VARCHAR(255) COMMENT '商品名称',
@@ -50,9 +52,9 @@ CREATE TABLE IF NOT EXISTS ods_product_info
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci COMMENT ='商品维度信息表';
 
--- 4. ods_page_info: 页面信息表
+-- 4. page_info: 页面信息表
 -- 记录页面的基本信息，用于关联页面ID获取页面名称和类型。
-CREATE TABLE IF NOT EXISTS ods_page_info
+CREATE TABLE IF NOT EXISTS page_info
 (
     page_id   VARCHAR(64) PRIMARY KEY COMMENT '页面ID',
     page_name VARCHAR(255) COMMENT '页面名称',
