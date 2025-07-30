@@ -1,7 +1,7 @@
-create database if not exists jtp_oms_warehouse location
+CREATE DATABASE IF NOT EXISTS jtp_oms_warehouse location
     'hdfs://node101:8020/warehouse/jtp_oms_warehouse';
 
-use jtp_oms_warehouse;
+USE jtp_oms_warehouse;
 
 -- 创建表：用户维度拉链表
 DROP TABLE IF EXISTS jtp_oms_warehouse.dim_ums_member_zip;
@@ -42,3 +42,116 @@ CREATE EXTERNAL TABLE IF NOT EXISTS jtp_oms_warehouse.dim_ums_member_zip
         2）、使用拉链表存储，大大减少存储空间
         3）、拉链表思想：每条数据加上生命周期start_date和end_date，默认情况下end_date为9999-12-31，表示数据未过期
 */
+INSERT OVERWRITE TABLE jtp_oms_warehouse.dim_ums_member_zip PARTITION (dt = '9999-12-31')
+SELECT id,
+       member_level_id,
+       username,
+       password,
+       md5(nickname)                            AS nickname,
+       concat(substr(phone, 1, 3), '********')  AS phone,
+       status,
+       create_time,
+       icon,
+       gender,
+       concat(substr(birthday, 1, 4), '-01-01') AS birthday,
+       city,
+       job,
+       personalized_signature,
+       source_type,
+       integration,
+       growth,
+       luckey_count,
+       history_integration,
+       modify_time,
+       date_format(create_time, 'yyyy-MM-dd')   AS start_date,
+       '9999-12-31'                             AS end_date
+FROM jtp_oms_warehouse.ods_ums_member
+WHERE dt = '2024-12-31';
+SELECT *
+FROM jtp_oms_warehouse.dim_ums_member_zip
+;
+
+INSERT OVERWRITE TABLE jtp_oms_warehouse.dim_ums_member_zip PARTITION (dt)
+-- s5：获取所有数据，并对过期数据修改end_date（结束日期）和dt（分区字段）
+SELECT id,
+       member_level_id,
+       username,
+       password,
+       nickname,
+       phone,
+       status,
+       create_time,
+       icon,
+       gender,
+       birthday,
+       city,
+       job,
+       personalized_signature,
+       source_type,
+       integration,
+       growth,
+       luckey_count,
+       history_integration,
+       modify_time,
+       start_date,
+       if(rk = 1, end_date, date_sub('2025-01-01', 1)) AS end_date,
+       if(rk = 1, end_date, date_sub('2025-01-01', 1)) AS dt
+FROM (
+         -- s4：每条数据加上序号
+         SELECT *,
+                -- 加序号
+                row_number() over (PARTITION BY id ORDER BY start_date DESC ) AS rk
+         FROM (
+                  -- s1: 前1日：9999-12-31 数据
+                  SELECT id,
+                         member_level_id,
+                         username,
+                         password,
+                         nickname,
+                         phone,
+                         status,
+                         create_time,
+                         icon,
+                         gender,
+                         birthday,
+                         city,
+                         job,
+                         personalized_signature,
+                         source_type,
+                         integration,
+                         growth,
+                         luckey_count,
+                         history_integration,
+                         modify_time,
+                         start_date,
+                         end_date
+                  FROM jtp_oms_warehouse.dim_ums_member_zip
+                  WHERE dt = '9999-12-31'
+                        -- s3：合并所有数据
+                  UNION
+                  -- s2：当日增量数据（新增和修改）
+                  SELECT id,
+                         member_level_id,
+                         username,
+                         password,
+                         md5(nickname)                            AS nickname,
+                         concat(substr(phone, 1, 3), '********')  AS phone,
+                         status,
+                         create_time,
+                         icon,
+                         gender,
+                         concat(substr(birthday, 1, 4), '-01-01') AS birthday,
+                         city,
+                         job,
+                         personalized_signature,
+                         source_type,
+                         integration,
+                         growth,
+                         luckey_count,
+                         history_integration,
+                         modify_time,
+                         date_format(create_time, 'yyyy-MM-dd')   AS start_date,
+                         '9999-12-31'                             AS end_date
+                  FROM jtp_oms_warehouse.ods_ums_member
+                  WHERE dt = '2025-01-01') t1) t2
+;

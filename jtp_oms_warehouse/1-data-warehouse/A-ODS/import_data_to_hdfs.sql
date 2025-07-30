@@ -1,7 +1,7 @@
-create database if not exists jtp_oms_warehouse location
+CREATE DATABASE IF NOT EXISTS jtp_oms_warehouse location
     'hdfs://node101:8020/warehouse/jtp_oms_warehouse';
 
-use jtp_oms_warehouse;
+USE jtp_oms_warehouse;
 
 -- 会员表
 DROP TABLE IF EXISTS jtp_oms_warehouse.ods_ums_member;
@@ -43,7 +43,7 @@ where dt = '2025-01-01'
 ;
 
 
-show partitions jtp_oms_warehouse.ods_ums_member;
+SHOW PARTITIONS jtp_oms_warehouse.ods_ums_member;
 
 ALTER TABLE jtp_oms_warehouse.ods_ums_member ADD IF NOT EXISTS PARTITION (dt = '2024-12-31');
 
