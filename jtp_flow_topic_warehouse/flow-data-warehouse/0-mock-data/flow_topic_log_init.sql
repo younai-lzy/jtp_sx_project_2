@@ -24,7 +24,9 @@ CREATE TABLE IF NOT EXISTS user_action_log
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci COMMENT ='用户行为日志原始表';
-
+SELECT *
+FROM user_action_log
+;
 -- 2. order_info: 订单信息表
 -- 记录用户的订单详情，用于计算引导支付金额。
 CREATE TABLE IF NOT EXISTS order_info
@@ -40,6 +42,7 @@ CREATE TABLE IF NOT EXISTS order_info
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci COMMENT ='订单信息原始表';
+
 
 -- 3. product_info: 商品信息表
 -- 记录商品的基本信息，用于关联商品ID获取商品名称等。

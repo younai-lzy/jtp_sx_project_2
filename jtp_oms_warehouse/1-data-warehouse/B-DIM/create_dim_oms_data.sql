@@ -3,6 +3,14 @@ CREATE DATABASE IF NOT EXISTS jtp_oms_warehouse location
 
 USE jtp_oms_warehouse;
 
+/*
+DIM层维度表数据来源于ODS层原始同步数据
+    会员维度拉链表数据，有些字进行脱敏处理，
+        比如手机号码phone、出生日期birthday、身份标识shengfenzheng_id
+        1)、186********
+        2）、1997-00-00
+        3）、a4d2bc39d1a29ae36b0864b79b6ef330
+*/
 -- 创建表：用户维度拉链表
 DROP TABLE IF EXISTS jtp_oms_warehouse.dim_ums_member_zip;
 CREATE EXTERNAL TABLE IF NOT EXISTS jtp_oms_warehouse.dim_ums_member_zip
@@ -27,8 +35,8 @@ CREATE EXTERNAL TABLE IF NOT EXISTS jtp_oms_warehouse.dim_ums_member_zip
     luckey_count           INT COMMENT '剩余抽奖次数',
     history_integration    INT COMMENT '历史积分数量',
     modify_time            STRING COMMENT '数据更新修改时间',
-    start_date             STRING COMMENT '用户生命周期开始日期',
-    end_date               STRING COMMENT '用户声明周期结束日期'
+    start_date             STRING COMMENT '用户数据生命周期开始日期',
+    end_date               STRING COMMENT '用户数据生命周期结束日期'
 ) COMMENT '会员信息拉链表'
     PARTITIONED BY (dt STRING)
     STORED AS ORC
@@ -42,6 +50,9 @@ CREATE EXTERNAL TABLE IF NOT EXISTS jtp_oms_warehouse.dim_ums_member_zip
         2）、使用拉链表存储，大大减少存储空间
         3）、拉链表思想：每条数据加上生命周期start_date和end_date，默认情况下end_date为9999-12-31，表示数据未过期
 */
+-- =====================================================================================
+-- todo 1首次数据（历史数据）同步加载     --  dt=2024-12-31
+-- =====================================================================================
 INSERT OVERWRITE TABLE jtp_oms_warehouse.dim_ums_member_zip PARTITION (dt = '9999-12-31')
 SELECT id,
        member_level_id,
@@ -66,13 +77,15 @@ SELECT id,
        date_format(create_time, 'yyyy-MM-dd')   AS start_date,
        '9999-12-31'                             AS end_date
 FROM jtp_oms_warehouse.ods_ums_member
-WHERE dt = '2024-12-31';
+WHERE dt = '2024-12-31'
+;
+
+
 SELECT *
 FROM jtp_oms_warehouse.dim_ums_member_zip
 ;
 
 INSERT OVERWRITE TABLE jtp_oms_warehouse.dim_ums_member_zip PARTITION (dt)
--- s5：获取所有数据，并对过期数据修改end_date（结束日期）和dt（分区字段）
 SELECT id,
        member_level_id,
        username,
@@ -150,8 +163,11 @@ FROM (
                          luckey_count,
                          history_integration,
                          modify_time,
-                         date_format(create_time, 'yyyy-MM-dd')   AS start_date,
+                         date_format(modify_time, 'yyyy-MM-dd')   AS start_date,
                          '9999-12-31'                             AS end_date
                   FROM jtp_oms_warehouse.ods_ums_member
                   WHERE dt = '2025-01-01') t1) t2
+;
+SELECT *
+FROM jtp_oms_warehouse.dim_ums_member_zip
 ;
