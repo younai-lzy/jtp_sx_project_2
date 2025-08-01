@@ -1,13 +1,15 @@
 CREATE DATABASE IF NOT EXISTS jtp_flow_topic_warehouse
     location 'hdfs://node101:8020/user/spark/warehouse/jtp_flow_topic_warehouse';
 use jtp_flow_topic_warehouse;
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
 
-CREATE TABLE dim_product
+DROP TABLE IF EXISTS dim_product;
+CREATE EXTERNAL TABLE IF NOT EXISTS dim_product
 (
-    product_id   STRING PRIMARY KEY COMMENT '产品ID',
+    product_id   STRING COMMENT '产品ID',
     product_name STRING COMMENT '产品名称',
-    category     STRING COMMENT '商品类别',
-    brand        STRING COMMENT '品牌'
+    category     STRING COMMENT '商品类别'
 ) COMMENT '产品维度表'
     PARTITIONED BY (dt string comment '日期分区')
     ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
@@ -15,9 +17,16 @@ CREATE TABLE dim_product
     LOCATION 'hdfs://node101:8020/user/spark/warehouse/jtp_flow_topic_warehouse/dim_product';
 ;
 
+-- 插入数据
+INSERT OVERWRITE TABLE jtp_flow_topic_warehouse.dim_product PARTITION (dt)
+SELECT product_id,
+       product_name,
+       category,
+       '2025-07-31' AS dt
+FROM jtp_flow_topic_warehouse.ods_product_info;
 
-
-CREATE TABLE dim_page
+DROP TABLE IF EXISTS dim_page;
+CREATE EXTERNAL TABLE IF NOT EXISTS dim_page
 (
     page_id   STRING PRIMARY KEY COMMENT '页面ID',
     page_name STRING COMMENT '页面名称',
@@ -29,8 +38,16 @@ CREATE TABLE dim_page
     LOCATION 'hdfs://node101:8020/user/spark/warehouse/jtp_flow_topic_warehouse/dim_page';
 ;
 
+-- 插入数据
+INSERT OVERWRITE TABLE jtp_flow_topic_warehouse.dim_page PARTITION (dt)
+SELECT page_id,
+       page_name,
+       page_type,
+       '2025-07-31' AS dt
+FROM jtp_flow_topic_warehouse.ods_page_info;
 
-CREATE TABLE dim_user
+DROP TABLE IF EXISTS dim_user;
+CREATE EXTERNAL TABLE IF NOT EXISTS dim_user
 (
     user_id   STRING PRIMARY KEY COMMENT '用户ID',
     age_group STRING COMMENT '年龄段',
@@ -44,8 +61,44 @@ CREATE TABLE dim_user
     LOCATION 'hdfs://node101:8020/user/spark/warehouse/jtp_flow_topic_warehouse/dim_user'
 ;
 
+-- 插入数据
+INSERT OVERWRITE TABLE jtp_flow_topic_warehouse.dim_user PARTITION (dt)
+SELECT user_id,
+       age_group,
+       country,
+       province,
+       city,
+       '2025-07-31' AS dt
+FROM jtp_flow_topic_warehouse,ods_user_action_log
 
-SELECT default.parse_ip_location('66.247.157.64');
+
+SELECT *,
+       default.(client_user_agent) AS browser_map
+FROM jtp_flow_topic_warehouse.ods_user_action_log
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 -- CREATE TABLE fact_sales
 -- (
