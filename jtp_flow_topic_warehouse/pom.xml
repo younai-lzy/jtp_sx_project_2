@@ -46,10 +46,11 @@
     <dependencies>
 
         <!--    ip2region 依赖-->
+        <!-- https://mvnrepository.com/artifact/org.lionsoul/ip2region -->
         <dependency>
             <groupId>org.lionsoul</groupId>
             <artifactId>ip2region</artifactId>
-            <version>1.7.2</version>
+            <version>2.7.0</version>
         </dependency>
 
         <!--    HuTool 依赖-->
