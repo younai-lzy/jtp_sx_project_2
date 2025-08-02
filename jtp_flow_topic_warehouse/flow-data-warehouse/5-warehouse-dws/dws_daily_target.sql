@@ -3,7 +3,7 @@ SET hive.exec.dynamic.partition=true;
 SET hive.exec.dynamic.partition.mode=nonstrict;
 
 -- 优化数据混洗（Shuffle）的并行度
-SET spark.sql.shuffle.partitions = 400; -- 此参数可以在运行时设置，保持不变
+SET spark.sql.shuffle.partitions = 1000; -- 此参数可以在运行时设置，保持不变 缓解数据倾斜和增加并行度
 
 -- 确保使用正确的数据库
 CREATE DATABASE IF NOT EXISTS jtp_flow_topic_warehouse LOCATION 'hdfs://node101:8020/user/spark/warehouse/jtp_flow_topic_warehouse';
@@ -55,7 +55,9 @@ WHERE
 GROUP BY
     dt, page_id, page_name, page_type;
 
-
+select *
+from dws_page_traffic_daily
+;
 -- ====================================================================
 -- DWS 层事实表：dws_user_behavior_daily (用户行为日统计表)
 -- 聚合 dwd_page_view_fact 和 dwd_order_fact，按天和用户进行统计
@@ -95,8 +97,8 @@ SELECT
     t1.total_clicks,
     t1.total_add_to_cart,
     t1.total_purchases,
-    t2.total_order_amount,
-    t2.total_paid_amount,
+    COALESCE(t2.total_order_amount, 0.0) AS total_order_amount, -- 将NULL改为0.0
+    COALESCE(t2.total_paid_amount, 0.0) AS total_paid_amount,   -- 将NULL改为0.0
     t1.dt AS dt_partition
 FROM
     ( -- 页面行为聚合
@@ -131,3 +133,8 @@ FROM
         GROUP BY
             dt, user_id
     ) t2 ON t1.user_id = t2.user_id AND t1.dt = t2.dt;
+
+select *
+from dws_user_behavior_daily
+limit 10
+;

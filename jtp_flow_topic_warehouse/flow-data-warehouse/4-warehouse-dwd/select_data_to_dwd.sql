@@ -131,3 +131,6 @@ FROM
     jtp_flow_topic_warehouse.dim_product dpr ON oi.product_id = dpr.product_id AND oi.dt = dpr.dt
 WHERE
         oi.dt = '2025-07-31';
+
+select *
+from dwd_order_fact limit 10;
