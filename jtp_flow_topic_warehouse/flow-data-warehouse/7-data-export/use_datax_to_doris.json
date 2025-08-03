@@ -1,0 +1,121 @@
+{
+  "job": {
+    "setting": {
+      "speed": {
+        "channel": 1
+      }
+    },
+    "content": [
+      {
+        "reader": {
+          "name": "hdfsreader",
+          "parameter": {
+            "path": "/user/spark/warehouse/jtp_flow_topic_warehouse/ads_page_guidance_daily/dt_partition=2025-07-31",
+            "defaultFS": "hdfs://node101:8020",
+            "column": [
+              {
+                "index": 0,
+                "type": "string"
+              },
+              {
+                "index": 1,
+                "type": "string"
+              },
+              {
+                "index": 2,
+                "type": "string"
+              },
+              {
+                "index": 3,
+                "type": "string"
+              },
+              {
+                "index": 4,
+                "type": "string"
+              },
+              {
+                "index": 5,
+                "type": "string"
+              },
+              {
+                "index": 6,
+                "type": "string"
+              },
+              {
+                "index": 7,
+                "type": "long"
+              },
+              {
+                "index": 8,
+                "type": "long"
+              },
+              {
+                "index": 9,
+                "type": "long"
+              },
+              {
+                "index": 10,
+                "type": "long"
+              },
+              {
+                "index": 11,
+                "type": "double"
+              }
+            ],
+            "fileType": "text",
+            "encoding": "UTF-8",
+            "fieldDelimiter": ","
+          }
+        },
+        "writer": {
+          "name": "doriswriter",
+          "parameter": {
+            "loadUrl": [
+              "192.168.142.112:8030"
+            ],
+            "column": [
+              "dt",
+              "page_id",
+              "page_name",
+              "page_type",
+              "product_id",
+              "product_name",
+              "product_category",
+              "guided_page_views",
+              "guided_product_clicks",
+              "guided_add_to_cart_events",
+              "guided_purchase_events",
+              "guidance_to_purchase_rate"
+            ],
+            "username": "root",
+            "password": "123456",
+            "flushInterval": 30000,
+            "connection": [
+              {
+                "jdbcUrl": "jdbc:mysql://node102:9030/jtp_flow_topic_warehouse",
+                "selectedDatabase": "jtp_flow_topic_warehouse",
+                "table": [
+                  "ads_page_guidance_daily"
+                ]
+              }
+            ],
+            "loadProps": {
+              "column_separator": ",",
+              "line_delimiter": "\\n",
+              "strict_mode": "false",
+              "max_filter_ratio": "1.0"
+            },
+            "maxBatchRows": 1,
+            "batchSize": 104857600,
+            "labelPrefix": "datax_doris_writer_"
+          }
+        }
+      }
+    ],
+    "setting": {
+      "speed": {
+        "channel": 1
+      }
+    }
+  }
+}

@@ -1,3 +1,6 @@
+-- 确保使用正确的数据库
+
+
 -- 设置 Hive 动态分区和非严格模式
 SET hive.exec.dynamic.partition=true;
 SET hive.exec.dynamic.partition.mode=nonstrict;
@@ -66,7 +69,8 @@ SELECT dt,
 FROM jtp_flow_topic_warehouse.dws_page_traffic_daily
 WHERE dt_partition = '2025-07-31';
 
-
+select *
+from ads_page_analysis_daily;
 -- ====================================================================
 -- ADS 层：ads_page_guidance_daily (页面引导日表)
 -- 用于分析页面引导到商品的具体效果
