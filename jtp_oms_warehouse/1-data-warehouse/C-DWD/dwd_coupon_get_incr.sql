@@ -50,3 +50,68 @@ WHERE dt = '2025-01-01'
   -- 确保仅仅获取今日领取优惠卷数据，排除今日使用优惠卷数据
   AND date_format(create_time, 'yyyy-MM-dd') = '2025-01-01'
 ;
+
+-- todo 业务过程：用户下单时使用优惠卷
+-- 2-DWD事实表：优惠卷使用表
+-- ========================================================================================
+DROP TABLE IF EXISTS jtp_oms_shucang.dwd_coupon_used_incr;
+CREATE EXTERNAL TABLE IF NOT EXISTS jtp_oms_shucang.dwd_coupon_used_incr
+(
+    id          STRING COMMENT '主键',
+    coupon_id   STRING COMMENT '优惠卷ID',
+    member_id   STRING COMMENT '会员ID',
+    get_type    STRING COMMENT '获取类型：0->后台赠送；1->主动获取',
+    create_time STRING COMMENT '优惠卷领取日期时间',
+    use_time    STRING COMMENT '使用时间',
+    order_id    STRING COMMENT '订单编号'
+) COMMENT '优惠卷领取事务事实表'
+    PARTITIONED BY (dt STRING COMMENT '日期分区，表示使用优惠卷日期')
+    STORED AS ORC
+    TBLPROPERTIES ('orc.compress' = 'SNAPPY')
+    LOCATION 'hdfs://node101:8020/user/spark/warehouse/jtp_oms_shucang/dwd_coupon_used_incr';
+
+
+-- 查询数据
+SELECT
+    *
+FROM jtp_oms_shucang.dwd_coupon_used_incr
+WHERE dt = '2024-12-31'
+;
+
+
+-- todo 首日数据加载：ODS层首日获取历史数据，包含很多天数据，
+--      所以使用动态分区将数据写入DWD层各个分区表中（每个分区存储当天使用数据）
+SET hive.exec.dynamic.partition=true;
+SET hive.exec.dynamic.partition.mode=nonstrict;
+INSERT OVERWRITE TABLE jtp_oms_shucang.dwd_coupon_used_incr PARTITION (dt)
+SELECT
+    id
+     , coupon_id
+     , member_id
+     , get_type
+     , create_time
+     , use_time
+     , order_id
+     , date_format(use_time, 'yyyy-MM-dd') AS dt
+FROM jtp_oms_shucang.ods_oms_coupon_use_incr
+WHERE dt = '2024-12-31'
+  AND use_time IS NOT NULL
+;
+
+SHOW PARTITIONS jtp_oms_shucang.dwd_coupon_used_incr ;
+
+
+-- 每日数据加载
+INSERT OVERWRITE TABLE jtp_oms_shucang.dwd_coupon_used_incr PARTITION (dt = '2025-01-01')
+SELECT
+    id
+     , coupon_id
+     , member_id
+     , get_type
+     , create_time
+     , use_time
+     , order_id
+FROM jtp_oms_shucang.ods_oms_coupon_use_incr
+WHERE dt = '2025-01-01'
+  AND use_time IS NOT NULL
+;
