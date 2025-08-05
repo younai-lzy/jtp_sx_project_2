@@ -5,8 +5,8 @@ USE jtp_oms_warehouse;
 
 -- todo 业务过程：用户领取优惠卷
 -- 1-DWD事实表：优惠卷领取表
-DROP TABLE IF EXISTS jtp_oms_shucang.dwd_coupon_get_incr;
-CREATE EXTERNAL TABLE IF NOT EXISTS jtp_oms_shucang.dwd_coupon_get_incr
+DROP TABLE IF EXISTS jtp_oms_warehouse.dwd_coupon_get_incr;
+CREATE EXTERNAL TABLE IF NOT EXISTS jtp_oms_warehouse.dwd_coupon_get_incr
 (
     id          STRING COMMENT '主键',
     coupon_id   STRING COMMENT '优惠卷ID',
@@ -31,7 +31,7 @@ SELECT id
      , get_type
      , create_time
      , date_format(create_time, 'yyyy-MM-dd') AS dt
-FROM jtp_oms_shucang.ods_oms_coupon_use_incr
+FROM jtp_oms_warehouse.ods_oms_coupon_use_incr
 WHERE dt = '2024-12-31'
 ;
 
