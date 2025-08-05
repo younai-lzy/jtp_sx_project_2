@@ -51,11 +51,13 @@ WHERE dt = '2025-01-01'
   AND date_format(create_time, 'yyyy-MM-dd') = '2025-01-01'
 ;
 
+select *
+from dwd_coupon_get_incr;
 -- todo 业务过程：用户下单时使用优惠卷
 -- 2-DWD事实表：优惠卷使用表
 -- ========================================================================================
-DROP TABLE IF EXISTS jtp_oms_shucang.dwd_coupon_used_incr;
-CREATE EXTERNAL TABLE IF NOT EXISTS jtp_oms_shucang.dwd_coupon_used_incr
+DROP TABLE IF EXISTS jtp_oms_warehouse.dwd_coupon_used_incr;
+CREATE EXTERNAL TABLE IF NOT EXISTS jtp_oms_warehouse.dwd_coupon_used_incr
 (
     id          STRING COMMENT '主键',
     coupon_id   STRING COMMENT '优惠卷ID',
@@ -68,14 +70,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS jtp_oms_shucang.dwd_coupon_used_incr
     PARTITIONED BY (dt STRING COMMENT '日期分区，表示使用优惠卷日期')
     STORED AS ORC
     TBLPROPERTIES ('orc.compress' = 'SNAPPY')
-    LOCATION 'hdfs://node101:8020/user/spark/warehouse/jtp_oms_shucang/dwd_coupon_used_incr';
-
-
--- 查询数据
-SELECT
-    *
-FROM jtp_oms_shucang.dwd_coupon_used_incr
-WHERE dt = '2024-12-31'
+    LOCATION 'hdfs://node101:8020/user/spark/warehouse/jtp_oms_warehouse/dwd_coupon_used_incr'
 ;
 
 
@@ -83,7 +78,7 @@ WHERE dt = '2024-12-31'
 --      所以使用动态分区将数据写入DWD层各个分区表中（每个分区存储当天使用数据）
 SET hive.exec.dynamic.partition=true;
 SET hive.exec.dynamic.partition.mode=nonstrict;
-INSERT OVERWRITE TABLE jtp_oms_shucang.dwd_coupon_used_incr PARTITION (dt)
+INSERT OVERWRITE TABLE jtp_oms_warehouse.dwd_coupon_used_incr PARTITION (dt)
 SELECT
     id
      , coupon_id
@@ -93,16 +88,16 @@ SELECT
      , use_time
      , order_id
      , date_format(use_time, 'yyyy-MM-dd') AS dt
-FROM jtp_oms_shucang.ods_oms_coupon_use_incr
+FROM jtp_oms_warehouse.ods_oms_coupon_use_incr
 WHERE dt = '2024-12-31'
   AND use_time IS NOT NULL
 ;
 
-SHOW PARTITIONS jtp_oms_shucang.dwd_coupon_used_incr ;
+SHOW PARTITIONS jtp_oms_warehouse.dwd_coupon_used_incr ;
 
 
 -- 每日数据加载
-INSERT OVERWRITE TABLE jtp_oms_shucang.dwd_coupon_used_incr PARTITION (dt = '2025-01-01')
+INSERT OVERWRITE TABLE jtp_oms_warehouse.dwd_coupon_used_incr PARTITION (dt = '2025-01-01')
 SELECT
     id
      , coupon_id
@@ -111,7 +106,14 @@ SELECT
      , create_time
      , use_time
      , order_id
-FROM jtp_oms_shucang.ods_oms_coupon_use_incr
+FROM jtp_oms_warehouse.ods_oms_coupon_use_incr
 WHERE dt = '2025-01-01'
   AND use_time IS NOT NULL
+;
+
+-- 查询数据
+SELECT
+    *
+FROM jtp_oms_warehouse.dwd_coupon_used_incr
+-- WHERE dt = '2024-12-31'
 ;

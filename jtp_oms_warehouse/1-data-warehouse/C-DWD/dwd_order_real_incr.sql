@@ -53,8 +53,7 @@ CREATE EXTERNAL TABLE IF NOT EXISTS jtp_oms_warehouse.dwd_oms_order_incr
 -- todo step1 首日同步数据：2024-12-31
 
 INSERT OVERWRITE TABLE jtp_oms_warehouse.dwd_oms_order_incr PARTITION (dt)
-SELECT
-    id
+SELECT id
      , member_id
      , coupon_id
      , order_sn
@@ -72,13 +71,13 @@ SELECT
            WHEN pay_type = 1 THEN '支付宝'
            WHEN pay_type = 2 THEN '微信'
            ELSE CAST(pay_type AS STRING)
-    END AS pay_type_name
+    END                                                                                           AS pay_type_name
      , source_type
      , CASE
            WHEN source_type = 0 THEN 'PC订单'
            WHEN pay_type = 1 THEN 'app订单'
            ELSE CAST(source_type AS STRING)
-    END AS source_type_name
+    END                                                                                           AS source_type_name
      , status
      , order_type
      , IF(order_type = 0, '正常订单', if(order_type = 1, '秒杀订单', CAST(order_type AS STRING))) AS order_type_name
@@ -94,14 +93,16 @@ SELECT
      , receive_time
      , comment_time
      , modify_time
-     , date_format(create_time, 'yyyy-MM-dd') AS dt
+     , date_format(create_time, 'yyyy-MM-dd')                                                     AS dt
 FROM jtp_oms_warehouse.ods_oms_order_incr
 WHERE dt = '2024-12-31'
 ;
 
-SHOW PARTITIONS jtp_oms_warehouse.dwd_oms_order_incr ;
+SHOW PARTITIONS jtp_oms_warehouse.dwd_oms_order_incr;
 
-SELECT * FROM jtp_oms_warehouse.dwd_oms_order_incr WHERE dt = '2024-12-25' ;
+SELECT *
+FROM jtp_oms_warehouse.dwd_oms_order_incr
+-- WHERE dt = '2024-12-25';
 
 
 
