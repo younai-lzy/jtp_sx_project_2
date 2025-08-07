@@ -9,6 +9,7 @@
     <module>jtp_ads_warehouse</module>
       <module>jtp_oms_warehouse</module>
       <module>jtp_flow_topic_warehouse</module>
+      <module>jtp_commodity_warehouse</module>
   </modules>
   <packaging>pom</packaging>
 
