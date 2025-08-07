@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS `dim_user`
     PARTITIONED BY (`dt` STRING COMMENT '分区日期')
     ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
     STORED AS TEXTFILE
-    LOCATION 'hdfs://node101:8020/user/spark/warehouse/jtp_flow_topic_warehouse/dim_user';
+    LOCATION 'hdfs://node101:8020/user/spark/warehouse/jtp_commodity_warehouse/dim_user';
 
 
 -- 2. 商品维度表 (dim_product)
@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS `dim_product`
     PARTITIONED BY (`dt` STRING COMMENT '分区日期')
     ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
     STORED AS TEXTFILE
-    LOCATION 'hdfs://node101:8020/user/spark/warehouse/jtp_flow_topic_warehouse/dim_product';
+    LOCATION 'hdfs://node101:8020/user/spark/warehouse/jtp_commodity_warehouse/dim_product';
 
 
 -- 3. 渠道维度表 (dim_channel)
@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS `dim_channel`
     PARTITIONED BY (`dt` STRING COMMENT '分区日期')
     ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
     STORED AS TEXTFILE
-    LOCATION 'hdfs://node101:8020/user/spark/warehouse/jtp_flow_topic_warehouse/dim_channel';
+    LOCATION 'hdfs://node101:8020/user/spark/warehouse/jtp_commodity_warehouse/dim_channel';
 
 
 -- ====================================================================================================
