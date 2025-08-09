@@ -43,3 +43,5 @@ LOCATION 'hdfs://node101:8020/user/spark/warehouse/jtp_commodity_warehouse/ods_u
 
 ALTER TABLE ods_user_action_log ADD IF NOT EXISTS PARTITION (dt = '2025-08-07');
 
+SELECT * FROM ods_user_action_log WHERE dt = '2025-08-07';
+
