@@ -17,9 +17,9 @@ CREATE EXTERNAL TABLE IF NOT EXISTS jtp_oms_warehouse.ads_coupon_daily_report
     coupon_used_count      BIGINT COMMENT '每日优惠卷使用次数',
     coupon_used_user_count BIGINT COMMENT '每日优惠卷使用人数'
 ) COMMENT '每日所有优惠卷统计'
-    ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
-    STORED AS TEXTFILE
-    LOCATION 'hdfs://node101:8020/user/spark/warehouse/jtp_oms_warehouse/ads_coupon_daily_report';
+    STORED AS ORC
+    LOCATION 'hdfs://node101:8020/user/spark/warehouse/jtp_oms_warehouse/ads_coupon_daily_report'
+;
 
 
 SELECT *
