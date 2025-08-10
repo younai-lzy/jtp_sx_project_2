@@ -10,6 +10,7 @@
       <module>jtp_oms_warehouse</module>
       <module>jtp_flow_topic_warehouse</module>
       <module>jtp_commodity_warehouse</module>
+      <module>bodhidharma-Disc</module>
   </modules>
   <packaging>pom</packaging>
 
