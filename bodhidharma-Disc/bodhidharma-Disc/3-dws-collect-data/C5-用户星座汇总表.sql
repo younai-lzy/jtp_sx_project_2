@@ -2,11 +2,11 @@ DROP TABLE IF EXISTS bodhidharma_disc.dws_user_constellation_tag;
 CREATE TABLE IF NOT EXISTS bodhidharma_disc.dws_user_constellation_tag
 (
     user_id       BIGINT COMMENT '用户ID',
-    constellation VARCHAR(255) COMMENT '星座'
+    constellation VARCHAR(255) REPLACE_IF_NOT_NULL COMMENT '星座'
 )ENGINE = OLAP
-    DUPLICATE KEY (user_id)
-DISTRIBUTED BY HASH (user_id) BUCKETS 5
-PROPERTIES (
+    AGGREGATE KEY (user_id)
+    DISTRIBUTED BY HASH (user_id) BUCKETS 5
+    PROPERTIES (
     "replication_num" = "1"
 );
 

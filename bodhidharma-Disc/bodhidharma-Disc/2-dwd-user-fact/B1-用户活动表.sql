@@ -1,6 +1,3 @@
-CREATE DATABASE IF NOT EXISTS bodhidharma_disc;
-USE bodhidharma_disc;
-
 DROP TABLE IF EXISTS bodhidharma_disc.dwd_user_activity_log;
 CREATE TABLE bodhidharma_disc.dwd_user_activity_log
 (
@@ -26,14 +23,13 @@ PROPERTIES (
 
 
 INSERT INTO bodhidharma_disc.dwd_user_activity_log
-SELECT
-    dt,
-    activity_id,
-    activity_name,
-    coupon_id,
-    activity_type,
-    start_time,
-    end_time,
-    creation_time
+SELECT dt,
+       activity_id,
+       activity_name,
+       coupon_id,
+       activity_type,
+       start_time,
+       end_time,
+       creation_time
 FROM hive_catalogs.bodhidharma_disc.ods_activity_info
 WHERE dt = '2025-08-10';

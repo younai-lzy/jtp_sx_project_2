@@ -115,4 +115,5 @@ WHERE
   AND T1.sku_id IS NOT NULL AND T1.sku_id <> 0 -- 过滤掉sku_id为空或0的数据
   AND T1.product_name IS NOT NULL AND T1.product_name <> '' -- 过滤掉商品名称为空的数据
 GROUP BY
-    T1.dts, T1.sku_id, T1.product_name;
+    T1.dts, T1.sku_id, T1.product_name
+;
