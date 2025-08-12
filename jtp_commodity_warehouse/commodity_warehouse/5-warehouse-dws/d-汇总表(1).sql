@@ -8,12 +8,12 @@ CREATE CATALOG IF NOT EXISTS hive_catalog PROPERTIES (
   'hive.metastore.uris' = 'thrift://node101:9083'
 );
 
-CREATE DATABASE IF NOT EXISTS ecommerce_dw;
-USE ecommerce_dw;
+CREATE DATABASE IF NOT EXISTS jtp_gd03_warehouse;
+USE jtp_gd03_warehouse;
 -- todo 商品销售与流量汇总表
 
-DROP TABLE IF EXISTS ecommerce_dw.dws_product_sales_traffic;
-CREATE TABLE IF NOT EXISTS ecommerce_dw.dws_product_sales_traffic (
+DROP TABLE IF EXISTS jtp_gd03_warehouse.dws_product_sales_traffic;
+CREATE TABLE IF NOT EXISTS jtp_gd03_warehouse.dws_product_sales_traffic (
     dt VARCHAR(255) COMMENT '分区日期',
     sku_id BIGINT COMMENT '商品SKU ID',
     product_id BIGINT COMMENT '商品ID',
@@ -37,7 +37,7 @@ PROPERTIES (
     "storage_format" = "V2"   -- 推荐的高效存储格式
 );
 
-INSERT INTO ecommerce_dw.dws_product_sales_traffic
+INSERT INTO jtp_gd03_warehouse.dws_product_sales_traffic
 SELECT
     a.dt,
     a.sku_id,
@@ -61,32 +61,32 @@ SELECT
         ) AS bounce_rate
 FROM
     -- DWD层用户行为明细
-    hive_catalog.ecommerce_dw.dwd_aggregated_wide a
+    hive_catalog.jtp_commodity_warehouse.dwd_aggregated_wide a
 -- 关联DIM层商品信息
-        LEFT JOIN hive_catalog.ecommerce_dw.dim_product p
+        LEFT JOIN hive_catalog.jtp_commodity_warehouse.dim_product p
                   ON a.sku_id = p.sku_id AND a.dt = p.dt
 -- 关联DWD层订单明细（支付状态）
-        LEFT JOIN hive_catalog.ecommerce_dw.dwd_order_detail o
+        LEFT JOIN hive_catalog.jtp_commodity_warehouse.dwd_order_detail o
                   ON a.sku_id = o.sku_id AND a.dt = o.dt AND o.status = 'paid'
 -- 子查询：计算会话内行为次数（用于跳出率）
         LEFT JOIN (
         SELECT
             user_id, session_id, dt,
             COUNT(1) AS session_action_cnt
-        FROM hive_catalog.ecommerce_dw.dwd_user_action_detail
+        FROM hive_catalog.jtp_commodity_warehouse.dwd_user_action_detail
         GROUP BY user_id, session_id, dt
     ) s ON a.user_id = s.user_id AND a.session_id = s.session_id AND a.dt = s.dt
 GROUP BY a.dt, a.sku_id, p.product_id, p.product_name, p.category_name;
 
 SELECT
     *
-FROM ecommerce_dw.dws_product_sales_traffic;
+FROM jtp_gd03_warehouse.dws_product_sales_traffic;
 
 
 
 -- todo 商品评价与客群汇总表
-DROP TABLE IF EXISTS ecommerce_dw.dws_product_review_crowd;
-CREATE TABLE IF NOT EXISTS ecommerce_dw.dws_product_review_crowd (
+DROP TABLE IF EXISTS jtp_gd03_warehouse.dws_product_review_crowd;
+CREATE TABLE IF NOT EXISTS jtp_gd03_warehouse.dws_product_review_crowd (
     dt DATE COMMENT '数据日期',
     sku_id BIGINT COMMENT '商品SKU ID',
     overall_rating DECIMAL(5,2) COMMENT '整体评分',
@@ -106,7 +106,7 @@ PROPERTIES (
     "storage_format" = "V2"   -- 推荐的高效存储格式
 );
 
-INSERT INTO ecommerce_dw.dws_product_review_crowd
+INSERT INTO jtp_gd03_warehouse.dws_product_review_crowd
 SELECT
     -- 将字符串类型的dt转换为date类型
     TO_DATE(r.dt) AS dt,
@@ -129,8 +129,8 @@ SELECT
     -- 最相关连带商品
     MAX(CASE WHEN co_rank = 1 THEN related_sku END) AS top_related_sku
 FROM
-    hive_catalog.ecommerce_dw.dwd_product_review_detail r
-        LEFT JOIN hive_catalog.ecommerce_dw.dwd_user_detail u
+    hive_catalog.jtp_commodity_warehouse.dwd_product_review_detail r
+        LEFT JOIN hive_catalog.jtp_commodity_warehouse.dwd_user_detail u
                   ON r.user_id = u.user_id AND r.dt = u.dt
         LEFT JOIN (
         SELECT
@@ -143,8 +143,8 @@ FROM
                      o1.sku_id AS main_sku,
                      o2.sku_id AS related_sku,
                      COUNT(DISTINCT o1.order_id) AS co_purchase_cnt
-                 FROM hive_catalog.ecommerce_dw.dwd_order_detail o1
-                          JOIN hive_catalog.ecommerce_dw.dwd_order_detail o2
+                 FROM hive_catalog.jtp_commodity_warehouse.dwd_order_detail o1
+                          JOIN hive_catalog.jtp_commodity_warehouse.dwd_order_detail o2
                                ON o1.order_id = o2.order_id AND o1.sku_id != o2.sku_id
                  GROUP BY o1.sku_id, o2.sku_id
              ) t
@@ -154,12 +154,12 @@ GROUP BY TO_DATE(r.dt), r.sku_id;
 
 SELECT
     *
-FROM ecommerce_dw.dws_product_review_crowd;
+FROM jtp_gd03_warehouse.dws_product_review_crowd;
 
 
 -- todo 价格与竞争汇总表
-DROP TABLE IF EXISTS ecommerce_dw.dws_price_competition;
-CREATE TABLE IF NOT EXISTS ecommerce_dw.dws_price_competition (
+DROP TABLE IF EXISTS jtp_gd03_warehouse.dws_price_competition;
+CREATE TABLE IF NOT EXISTS jtp_gd03_warehouse.dws_price_competition (
     dt VARCHAR(255) COMMENT '数据日期',
     sku_id BIGINT COMMENT '商品SKU ID',
     price_strength_score DECIMAL(5,2) COMMENT '价格力评分',
@@ -178,7 +178,7 @@ PROPERTIES (
 );
 
 
-INSERT INTO ecommerce_dw.dws_price_competition
+INSERT INTO jtp_gd03_warehouse.dws_price_competition
 SELECT
     -- 数据日期（取自价格变动日志的分区日期）
     TO_DATE(pt.change_time) AS dt,
@@ -198,9 +198,9 @@ SELECT
         ) AS related_heat_index
 FROM
     -- 1. ODS层价格变动日志（原始价格数据）
-    hive_catalog.ecommerce_dw.ods_price_trend_log pt
+    hive_catalog.jtp_commodity_warehouse.ods_price_trend_log pt
 -- 2. 关联DIM层商品维度表（获取商品基础信息）
-        LEFT JOIN hive_catalog.ecommerce_dw.dim_product p
+        LEFT JOIN hive_catalog.jtp_commodity_warehouse.dim_product p
                   ON pt.sku_id = p.sku_id
                       AND pt.dt = p.dt  -- 按日期分区关联
 -- 3. 关联DWD层商品明细（计算价格波动）
@@ -212,7 +212,7 @@ FROM
                             (MAX(price_after) - MIN(price_before)) * 1.0
                         / NULLIF(MIN(price_before), 0), 4
                 ) AS price_fluctuation_rate
-        FROM hive_catalog.ecommerce_dw.dwd_product_detail
+        FROM hive_catalog.jtp_commodity_warehouse.dwd_product_detail
         WHERE dt = '2025-08-07'
         GROUP BY sku_id
     ) pf ON pt.sku_id = pf.sku_id
@@ -225,7 +225,7 @@ FROM
                             COUNT(DISTINCT CASE WHEN action_type = 'pay' THEN user_id END) * 1.0
                         / NULLIF(COUNT(DISTINCT user_id), 0), 4
                 ) AS pay_conversion_rate
-        FROM hive_catalog.ecommerce_dw.dwd_user_action_detail
+        FROM hive_catalog.jtp_commodity_warehouse.dwd_user_action_detail
         WHERE dt = '2025-08-07'
         GROUP BY sku_id
     ) pc ON pt.sku_id = pc.sku_id
@@ -234,8 +234,8 @@ FROM
         SELECT
             o1.sku_id AS main_sku,  -- 明确main_sku来自o1
             COUNT(DISTINCT o1.user_id) AS related_visitor_count  -- 明确使用o1的user_id
-        FROM hive_catalog.ecommerce_dw.dwd_order_detail o1
-                 JOIN hive_catalog.ecommerce_dw.dwd_order_detail o2
+        FROM hive_catalog.jtp_commodity_warehouse.dwd_order_detail o1
+                 JOIN hive_catalog.jtp_commodity_warehouse.dwd_order_detail o2
                       ON o1.order_id = o2.order_id
                           AND o1.sku_id != o2.sku_id  -- 排除自身关联
         WHERE o1.dt = '2025-08-07'
@@ -246,7 +246,7 @@ FROM
         SELECT
             sku_id,
             COUNT(DISTINCT user_id) AS total_visitor_count
-        FROM hive_catalog.ecommerce_dw.dwd_user_action_detail
+        FROM hive_catalog.jtp_commodity_warehouse.dwd_user_action_detail
         WHERE dt = '2025-08-07'
           AND action_type IN ('view', 'click')
         GROUP BY sku_id
@@ -259,7 +259,7 @@ WHERE
 
 SELECT
     *
-FROM ecommerce_dw.dws_price_competition;
+FROM jtp_gd03_warehouse.dws_price_competition;
 
 
 
