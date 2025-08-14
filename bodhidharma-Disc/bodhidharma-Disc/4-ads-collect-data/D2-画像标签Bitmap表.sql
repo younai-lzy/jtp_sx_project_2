@@ -2,10 +2,10 @@
 DROP TABLE IF EXISTS bodhidharma_disc.ads_tag_value_bitmap;
 CREATE TABLE IF NOT EXISTS bodhidharma_disc.ads_tag_value_bitmap
 (
-    `tag_code`  VARCHAR(45) NULL COMMENT "标签ID",
-    `tag_value` VARCHAR(45) NULL COMMENT "标签值",
+    `tag_code`  VARCHAR(45) NULL COMMENT '标签ID',
+    `tag_value` VARCHAR(45) NULL COMMENT '标签值',
     -- bitmap_union 该标签值用户集合的并集
-    `user_ids`  STRING COMMENT "所有用户ID"
+    `user_ids`  STRING COMMENT '所有用户ID'
 ) ENGINE = OLAP
     DUPLICATE KEY(`tag_code`,`tag_value`)
 DISTRIBUTED BY HASH(`tag_code`) BUCKETS 2

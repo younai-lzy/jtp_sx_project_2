@@ -2,7 +2,7 @@ CREATE DATABASE IF NOT EXISTS `bodhidharma_disc`
     LOCATION 'hdfs://node101:8020/user/spark/warehouse/bodhidharma_disc';
 USE `bodhidharma_disc`;
 
-
+-- 创建 Doris 用户行为日志表
 DROP TABLE IF EXISTS bodhidharma_disc.ods_user_behavior_log;
 CREATE TABLE IF NOT EXISTS bodhidharma_disc.ods_user_behavior_log
 (

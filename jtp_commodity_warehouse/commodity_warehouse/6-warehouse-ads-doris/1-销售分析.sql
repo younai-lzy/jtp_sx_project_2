@@ -72,7 +72,8 @@ FROM (
                 action_type,
                 stay_duration,
                 COUNT(1) OVER (PARTITION BY dt, sku_id, user_id, session_id) AS session_action_cnt
-         FROM hive_catalog.jtp_commodity_warehouse.dwd_aggregated_wide) sub
+         FROM hive_catalog.jtp_commodity_warehouse.dwd_aggregated_wide
+    ) sub
 GROUP BY dt, sku_id;
 
 SELECT *
